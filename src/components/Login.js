@@ -2,13 +2,16 @@ import React from 'react'
 import Header from './Header'
 import { useState , useRef} from 'react';
 import { checkValidData } from '../Utils/Validate';
-import { createUserWithEmailAndPassword ,signInWithEmailAndPassword} from "firebase/auth";
+import { createUserWithEmailAndPassword ,signInWithEmailAndPassword ,updateProfile} from "firebase/auth";
 import { auth } from "../Utils/Firebase";
+import {  useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const[isSignInform, setIsSignInForm] = useState(true); 
   const[errorMessage , setErrorMessage] = useState(null);
+  const navigate = useNavigate();
 
+  const name = useRef(null);
   const email = useRef(null);
   const password = useRef(null);
 
@@ -27,8 +30,16 @@ const Login = () => {
       password.current.value)
   .then((userCredential) => { 
     const user = userCredential.user;
-    console.log(user)
-    // ...
+    updateProfile(user, {
+      displayName: name.current.value,
+      photoURL: "https://avatars.githubusercontent.com/u/78428856?v=4",
+    })
+    .then(() => {
+      navigate("/browse");
+    })
+    .catch((error) => {
+      setErrorMessage(error.message);
+    });
   })
   .catch((error) => {
     const errorCode = error.code;
@@ -47,6 +58,7 @@ const Login = () => {
     // Signed in 
     const user = userCredential.user;
     console.log(user)
+    navigate("/browse")
     // ...
   })
   .catch((error) => {
@@ -76,6 +88,7 @@ const Login = () => {
     className="w-3/12 absolute p-12 bg-black my-36 mx-auto right-0 left-0 text-white bg-opacity-80">
       <h1 className="font-bold text-3xl py-4">{isSignInform ? "sign In" : "Sign Up"}</h1>
      { !isSignInform && <input 
+        ref={name}
          type="text"
          placeholder="Full Name"
          className="p-4 my-4 w-full bg-gray-700 rounded-lg"/>
@@ -86,12 +99,6 @@ const Login = () => {
          type="text"
          placeholder="Email Address"
          className="p-4 my-4 w-full bg-gray-700 rounded-lg"/>
-
-        { !isSignInform &&<input 
-         type="tel"
-         placeholder="Mobile number"
-         className="p-4 my-4 w-full bg-gray-700 rounded-lg"/>
-        }
 
         <input 
         ref={password}
@@ -107,4 +114,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Login;
